@@ -6,22 +6,21 @@ from fastvideo.configs.models.dits.base import DiTArchConfig, DiTConfig
 
 @dataclass
 class Kandinsky5ArchConfig(DiTArchConfig):
-    _fsdp_shard_conditions: list = field(
-        default_factory=lambda: [
-            lambda n, m: ("text_transformer_blocks" in n
-                          or "visual_transformer_blocks" in n)
-            and n.split(".")[-1].isdigit()
-        ])
+    _fsdp_shard_conditions: list = field(default_factory=lambda: [
+        lambda n, m:
+        ("text_transformer_blocks" in n or "visual_transformer_blocks" in n
+         ) and n.split(".")[-1].isdigit()
+    ])
 
     # Native FastVideo implementation uses the same parameter names as diffusers
     # except FFN internals: Diffusers FFN uses `in_layer/out_layer`, while
     # FastVideo uses MLP `fc_in/fc_out`.
-    param_names_mapping: dict = field(default_factory=lambda: {
-        r"^(.*feed_forward)\.in_layer\.(weight|bias)$":
-        r"\1.mlp.fc_in.\2",
-        r"^(.*feed_forward)\.out_layer\.(weight|bias)$":
-        r"\1.mlp.fc_out.\2",
-    })
+    param_names_mapping: dict = field(
+        default_factory=lambda: {
+            r"^(.*feed_forward)\.in_layer\.(weight|bias)$": r"\1.mlp.fc_in.\2",
+            r"^(.*feed_forward)\.out_layer\.(weight|bias)$":
+            r"\1.mlp.fc_out.\2",
+        })
 
     reverse_param_names_mapping: dict = field(default_factory=lambda: {})
 
